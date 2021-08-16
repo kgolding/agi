@@ -82,8 +82,8 @@ type Response struct {
 }
 
 // Res returns the ResultString of a Response, as well as any error encountered.  Depending on the command, this is sometimes more useful than Val()
-func (r *Response) Res() (string,error) {
-  return r.ResultString, r.Error
+func (r *Response) Res() (string, error) {
+	return r.ResultString, r.Error
 }
 
 // Err returns the error value from the response
@@ -478,7 +478,14 @@ func (a *AGI) StreamFile(name string, escapeDigits string, offset int) (digit st
 	if escapeDigits == "" {
 		escapeDigits = `""`
 	}
-	return a.Command("STREAM FILE", name, escapeDigits, strconv.Itoa(offset)).Val()
+	resp := a.Command("STREAM FILE", name, escapeDigits, strconv.Itoa(offset))
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+	if resp.Result >= ' ' {
+		return string(resp.Result), nil
+	}
+	return "", nil
 }
 
 // Verbose logs the given message to the verbose message system
